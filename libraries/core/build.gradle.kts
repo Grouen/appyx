@@ -1,71 +1,69 @@
-import org.jetbrains.kotlin.config.JvmTarget
+import org.jetbrains.compose.ComposeBuildConfig
 
 plugins {
     id("com.android.library")
-    alias(libs.plugins.compose.compiler)
-    id("kotlin-android")
+    kotlin("multiplatform")
+    id("org.jetbrains.kotlin.plugin.compose") version "2.1.20"
+    id("org.jetbrains.compose") version "1.8.0"
     id("kotlin-parcelize")
-    id("appyx-publish")
-    id("appyx-lint")
-    id("appyx-detekt")
+    id("maven-publish")
+}
+
+group = "com.bumble.appyx"
+version = "1.0"
+
+kotlin {
+    jvmToolchain(17)
+    androidTarget {
+        publishLibraryVariants("release")
+        compilerOptions.freeCompilerArgs.addAll(
+            "-P",
+            "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=com.bumble.appyx.utils.Parcelize"
+        )
+    }
+
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "appyxCoreKit"
+            isStatic = true
+        }
+    }
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(compose.ui)
+            implementation(compose.material)
+            implementation("org.jetbrains.compose.ui:ui-backhandler:${ComposeBuildConfig.composeVersion}")
+            implementation("org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
+        }
+        androidMain.dependencies {
+            implementation("androidx.appcompat:appcompat:1.7.0")
+        }
+    }
 }
 
 android {
     namespace = "com.bumble.appyx.core"
-    compileSdk = libs.versions.androidCompileSdk.get().toInt()
+    compileSdk = 36
 
     defaultConfig {
-        minSdk = libs.versions.androidMinSdk.get().toInt()
-        targetSdk = libs.versions.androidTargetSdk.get().toInt()
+        minSdk = 21
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
         compose = true
-        buildConfig = true
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = JvmTarget.JVM_11.toString()
-    }
-    testOptions {
-        unitTests.all {
-            // interface method default implementation
-            it.exclude("**/*\$DefaultImpls.class")
-        }
     }
 }
 
-dependencies {
-    val composeBom = platform(libs.compose.bom)
+publishing {
+    repositories {
+        maven {
 
-    api(composeBom)
-    api(project(":libraries:customisations"))
-    api(libs.androidx.lifecycle.common)
-    api(libs.compose.animation.core)
-    api(libs.compose.animation.android)
-    api(libs.compose.runtime)
-    api(libs.androidx.appcompat)
-    api(libs.kotlin.coroutines.android)
-
-    implementation(composeBom)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.lifecycle.java8)
-    implementation(libs.compose.foundation.layout)
-
-
-    testImplementation(project(":libraries:testing-junit4"))
-    testImplementation(libs.androidx.arch.core.testing)
-    testImplementation(libs.junit)
-    testImplementation(libs.kotlin.coroutines.test)
-
-    androidTestImplementation(composeBom)
-    androidTestImplementation(libs.androidx.test.espresso.core)
-    androidTestImplementation(libs.androidx.test.junit)
-    androidTestImplementation(libs.compose.ui.test.junit4)
-    androidTestImplementation(libs.compose.foundation)
-    androidTestImplementation(project(":libraries:testing-ui"))
+        }
+    }
 }

@@ -1,9 +1,0 @@
-<?xml version="1.0" ?>
-<SmellBaseline>
-  <ManuallySuppressedIssues></ManuallySuppressedIssues>
-  <CurrentIssues>
-    <ID>CompositionLocalAllowlist:LocalNode.kt$LocalMovableContentMap</ID>
-    <ID>CompositionLocalAllowlist:LocalNode.kt$LocalNodeTargetVisibility</ID>
-    <ID>CompositionLocalAllowlist:LocalNode.kt$LocalSharedElementScope</ID>
-  </CurrentIssues>
-</SmellBaseline>
